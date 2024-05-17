@@ -1,0 +1,11 @@
+# Ignore vendor directory
+vendor/
+
+# Ignore config.yaml file
+config.yaml
+
+#igonre prod.yaml file
+prod.yaml
+
+#ignore credentials.json files
+config/config.json
