@@ -13,6 +13,8 @@ func main() {
 	// Route
 	route, e := routes.Init()
 
+	routes.RouteModule(route, db)
+	routes.RouteMagicCard(route, db)
 	routes.RouteAuth(route, db)
 
 	// Start server

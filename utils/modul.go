@@ -13,5 +13,4 @@ type BabRequest struct {
 	Title         string
 	Description   string
 	Task          string
-	ResultStudent string
 }

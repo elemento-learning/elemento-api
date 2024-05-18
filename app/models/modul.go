@@ -7,26 +7,29 @@ import (
 
 type Modul struct {
 	gorm.Model
-	ModulID    uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
-	Title      string    `gorm:"type:varchar(255);"`
-	Subtitle   string    `gorm:"type:varchar(255);"`
-	IsComplete bool      `gorm:"type:boolean;"`
-	Image      string    `gorm:"type:varchar(255);"`
-	ImageUrl   string    `gorm:"type:varchar(255);"`
-	Babs       []Bab     `gorm:"foreignkey:TitleID"`
+	ModulID  uuid.UUID `gorm:"column:id;type:char(36);primary_key;"`
+	Title    string    `gorm:"column:nama_modul;type:varchar(255);"`
+	Subtitle string    `gorm:"column:subnama_modul;type:varchar(255);"`
+	Image    string    `gorm:"column:image;type:varchar(255);"`
+	ImageUrl string    `gorm:"column:image_url;type:varchar(255);"`
+	Babs     []Bab     `gorm:"foreignkey:TitleID"`
 }
 
 type Bab struct {
 	gorm.Model
-	TitleID       uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
-	Title         string    `gorm:"type:varchar(255);"`
-	Description   string    `gorm:"type:text"`
-	Task          string    `gorm:"type:text"`
-	ResultStudent string    `gorm:"type:text"`
+	TitleID       uuid.UUID `gorm:"column:id;type:char(36);primary_key;"`
+	Title         string    `gorm:"column:nama_bab;type:varchar(255);"`
+	Description   string    `gorm:"column:deskripsi;type:text"`
+	Task          string    `gorm:"column:task;type:text"`
+	ResultStudent string    `gorm:"column:result;type:text"`
 }
 
 func (u *Modul) TableName() string {
 	return "moduls"
+}
+
+func (u *Bab) TableName() string {
+	return "babs"
 }
 
 // Path: app/models/modul.go

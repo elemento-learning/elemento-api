@@ -102,3 +102,22 @@ func (controller *MagicCardController) CreateMagicCard(c echo.Context) error {
 
 	return c.JSON(response.StatusCode, response)
 }
+
+func (controller *MagicCardController) GetMagicCardById(c echo.Context) error {
+	id := c.Param("id")
+	uuid, err := utils.ParseDataId(id)
+
+	if err != nil {
+		return c.JSON(400, err.Error())
+	}
+
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return c.JSON(401, "Unauthorized")
+	}
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+
+	response := controller.magicCardService.GetMagicCardById(uuid, token)
+	return c.JSON(response.StatusCode, response)
+}
+

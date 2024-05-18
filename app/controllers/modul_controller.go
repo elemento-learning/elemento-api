@@ -34,19 +34,10 @@ func (controller *ModulController) CreateNewModul(c echo.Context) error {
 	}
 	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
 
-	type Bab struct {
-		Title         string `form:"title" validate:"required"`
-		Description   string `form:"description" validate:"required"`
-		Task          string `form:"task"`
-		ResultStudent string `form:"resultStudent"`
-	}
-
 	type payload struct {
-		Title      string `form:"title" validate:"required"`
+		Title      string `form:"titleModul" validate:"required"`
 		IsComplete bool   `form:"isComplete" validate:"required"`
-		Subtitle   string `form:"subtitle" validate:"required"`
-		Image      string `form:"image" validate:"required"`
-		Babs       []Bab  `form:"babs" validate:"required"`
+		Subtitle   string `form:"subtitleModul" validate:"required"`
 	}
 
 	if err := c.Request().ParseMultipartForm(1024); err != nil {
@@ -71,29 +62,10 @@ func (controller *ModulController) CreateNewModul(c echo.Context) error {
 		return c.JSON(400, err.Error())
 	}
 
-	var babs []utils.BabRequest
-
-	for _, bab := range payloadValidator.Babs {
-		bab := utils.BabRequest{
-			Title:         bab.Title,
-			Description:   bab.Description,
-			Task:          bab.Task,
-			ResultStudent: bab.ResultStudent,
-		}
-
-		if err := controller.validate.Struct(bab); err != nil {
-			return c.JSON(400, err.Error())
-		}
-
-		babs = append(babs, bab)
-	}
-
 	ModulRequest := utils.ModulRequest{
 		Title:      payloadValidator.Title,
 		IsComplete: payloadValidator.IsComplete,
 		Subtitle:   payloadValidator.Subtitle,
-		Image:      payloadValidator.Image,
-		Babs:       babs,
 	}
 
 	if err := controller.validate.Struct(ModulRequest); err != nil {
@@ -101,6 +73,40 @@ func (controller *ModulController) CreateNewModul(c echo.Context) error {
 	}
 
 	response := controller.modulService.CreateNewModul(ModulRequest, token, photoRequest)
+	return c.JSON(response.StatusCode, response)
+}
+
+func (controller *ModulController) CreateBabAndIntegrateToModul(c echo.Context) error {
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return c.JSON(401, "Unauthorized")
+	}
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+
+	type payload struct {
+		Title       string    `form:"titleBab" validate:"required"`
+		Description string    `form:"descriptionBab" validate:"required"`
+		Task        string    `form:"taskBab" validate:"required"`
+		ModulId     uuid.UUID `form:"modulId" validate:"required"`
+	}
+
+	payloadValidator := new(payload)
+
+	if err := c.Bind(payloadValidator); err != nil {
+		return c.JSON(400, err.Error())
+	}
+
+	BabRequest := utils.BabRequest{
+		Title:       payloadValidator.Title,
+		Description: payloadValidator.Description,
+		Task:        payloadValidator.Task,
+	}
+
+	if err := controller.validate.Struct(BabRequest); err != nil {
+		return c.JSON(400, err.Error())
+	}
+
+	response := controller.modulService.CreateBabAndIntegrateToModul(payloadValidator.ModulId, token, BabRequest)
 	return c.JSON(response.StatusCode, response)
 }
 
