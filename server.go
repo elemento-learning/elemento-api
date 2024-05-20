@@ -16,6 +16,7 @@ func main() {
 	routes.RouteModule(route, db)
 	routes.RouteMagicCard(route, db)
 	routes.RouteAuth(route, db)
+	routes.RouteSchool(route, db)
 
 	// Start server
 	port := 8080
