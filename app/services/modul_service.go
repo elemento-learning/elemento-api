@@ -5,6 +5,7 @@ import (
 	"elemento-api/app/models"
 	"elemento-api/app/repositories"
 	"elemento-api/utils"
+	"fmt"
 	"io"
 
 	"cloud.google.com/go/storage"
@@ -47,8 +48,8 @@ func (service *modulService) CreateNewModul(modul utils.ModulRequest, bearerToke
 			Data:       nil,
 		}
 	}
-
-	storagePath := "modul/" + modul.Title + "/" + photoRequest.Handler.Filename
+	formattedTitle := utils.FormatTitleFromFirebase(modul.Title)
+	storagePath := "modul/" + formattedTitle + "/" + photoRequest.Handler.Filename
 	reader := photoRequest.File
 
 	bucket, err := client.Bucket("elemento-84e6b.appspot.com")
@@ -73,8 +74,9 @@ func (service *modulService) CreateNewModul(modul utils.ModulRequest, bearerToke
 	}
 
 	newModul := models.Modul{
-		Title:    modul.Title,
-		Subtitle: modul.Subtitle,
+		Title:       modul.Title,
+		Subtitle:    modul.Subtitle,
+		YoutubeLink: modul.YoutubeLink,
 	}
 
 	newModul.ModulID = uuid.New()
@@ -100,7 +102,7 @@ func (service *modulService) CreateNewModul(modul utils.ModulRequest, bearerToke
 	}
 
 	newModul.Image = photoRequest.Alias + "/" + storagePath
-	newModul.ImageUrl = "https://firebasestorage.googleapis.com/v0/b/elemento-84e6b.appspot.com/o/" + storagePath + "?alt=media"
+	newModul.ImageUrl = fmt.Sprintf("https://storage.googleapis.com/elemento-84e6b.appspot.com/%s", storagePath)
 
 	var response utils.Response
 	err = service.modulRepo.CreateNewModul(newModul)

@@ -35,9 +35,10 @@ func (controller *ModulController) CreateNewModul(c echo.Context) error {
 	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
 
 	type payload struct {
-		Title      string `form:"titleModul" validate:"required"`
-		IsComplete bool   `form:"isComplete" validate:"required"`
-		Subtitle   string `form:"subtitleModul" validate:"required"`
+		Title       string `form:"titleModul" validate:"required"`
+		IsComplete  bool   `form:"isComplete" validate:"required"`
+		YoutubeLink string `form:"youtubeLink" validate:"required"`
+		Subtitle    string `form:"subtitleModul" validate:"required"`
 	}
 
 	if err := c.Request().ParseMultipartForm(1024); err != nil {

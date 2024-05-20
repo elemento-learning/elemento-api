@@ -18,7 +18,6 @@ type MagicCard struct {
 
 type Senyawa struct {
 	gorm.Model
-	ID          uuid.UUID `gorm:"column:id;type:char(36);primary_key;"`
 	Judul       string    `gorm:"column:judul;type:varchar(255);"`
 	Unsur       string    `gorm:"column:unsur;type:varchar(255);"`
 	Deskripsi   string    `gorm:"column:desc;contype:text;"`

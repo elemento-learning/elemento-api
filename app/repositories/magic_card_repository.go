@@ -42,11 +42,17 @@ func (db *dbMagicCard) DeleteMagicCard(id uuid.UUID) error {
 	return err
 }
 
+func (db *dbMagicCard) IntegrateSenyawaToMagicCard(magicCard models.MagicCard, senyawa models.Senyawa) error {
+	err := db.Conn.Model(&magicCard).Association("Senyawa").Append(&senyawa)
+	return err
+}
+
 type MagicCardRepository interface {
 	CreateNewMagicCard(magicCard models.MagicCard) error
 	GetMagicCardById(id uuid.UUID) (models.MagicCard, error)
 	GetAllMagicCard() ([]models.MagicCard, error)
 	UpdateMagicCard(magicCard models.MagicCard) error
+	IntegrateSenyawaToMagicCard(magicCard models.MagicCard, senyawa models.Senyawa) error
 	DeleteMagicCard(id uuid.UUID) error
 }
 
