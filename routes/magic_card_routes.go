@@ -12,4 +12,8 @@ func RouteMagicCard(apiv1 *echo.Group, db *gorm.DB) {
 
 	apiv1.POST("/magic-card", magicCardController.CreateMagicCard)
 	apiv1.GET("/magic-card/:id", magicCardController.GetMagicCardById)
+	apiv1.GET("/magic-card", magicCardController.GetAllMagicCard)
+	apiv1.PUT("/magic-card/:id", magicCardController.UpdateMagicCard)
+	apiv1.DELETE("/magic-card/:id", magicCardController.DeleteMagicCard)
+	apiv1.POST("/magic-card/:id/senyawa", magicCardController.CreateSenyawaAndIntegrateToMagicCard)
 }

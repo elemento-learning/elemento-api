@@ -14,4 +14,5 @@ func RouteModule(apiv1 *echo.Group, db *gorm.DB) {
 	apiv1.POST("/module", moduleController.CreateNewModul)
 	apiv1.GET("/module/:id", moduleController.GetModulById)
 	apiv1.POST("/module/bab", moduleController.CreateBabAndIntegrateToModul)
+	apiv1.GET("/module", moduleController.GetModul)
 }

@@ -1,11 +1,17 @@
 package services
 
 import (
+	"context"
 	"elemento-api/app/models"
 	"elemento-api/app/repositories"
 	"elemento-api/utils"
+	"fmt"
+	"io"
 
+	"cloud.google.com/go/storage"
+	firebase "firebase.google.com/go"
 	"github.com/google/uuid"
+	"google.golang.org/api/option"
 	"gorm.io/gorm"
 )
 
@@ -51,6 +57,49 @@ func (service *magicCardService) CreateMagicCard(magicCard utils.MagicCardReques
 
 		newMagicCard.ListSenyawa = append(newMagicCard.ListSenyawa, newSenyawa)
 	}
+
+	opt := option.WithCredentialsFile("config/config.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal membuat aplikasi firebase"
+		response.Data = nil
+		return response
+	}
+
+	client, err := app.Storage(context.Background())
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal membuat client firebase" + err.Error()
+		response.Data = nil
+		return response
+	}
+
+	bucket, err := client.Bucket("elemento-84e6b.appspot.com")
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal membuat bucket firebase"
+		response.Data = nil
+		return response
+	}
+
+	formattedTitle := utils.FormatTitleFromFirebase(newMagicCard.NamaMolekul)
+	storagePath := "magic_card/" + formattedTitle + "/" + photoRequest.Handler.Filename
+	reader := photoRequest.File
+
+	wc := bucket.Object(storagePath).NewWriter(context.Background())
+	wc.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
+
+	if _, err := io.Copy(wc, reader); err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal mengupload foto ke firebase storage"
+		response.Data = nil
+		return response
+	}
+
+	newMagicCard.Image = photoRequest.Alias + "/" + storagePath
+	newMagicCard.ImageUrl = fmt.Sprintf("https://storage.googleapis.com/elemento-84e6b.appspot.com/%s", storagePath)
 
 	err = service.magicRepo.CreateNewMagicCard(newMagicCard)
 	if err != nil {
@@ -119,7 +168,7 @@ func (service *magicCardService) GetAllMagicCard(bearerToken string) utils.Respo
 
 }
 
-func (service *magicCardService) UpdateMagicCard(magicCard utils.MagicCardRequest, bearerToken string) utils.Response {
+func (service *magicCardService) UpdateMagicCard(uuid uuid.UUID, magicCard utils.MagicCardRequest, bearerToken string, photoRequest utils.UploadedPhoto) utils.Response {
 	var response utils.Response
 	if magicCard.NamaMolekul == "" || magicCard.UnsurMolekul == "" || magicCard.Description == "" {
 		response.StatusCode = 400
@@ -197,7 +246,8 @@ type MagicCardService interface {
 	CreateMagicCard(magicCard utils.MagicCardRequest, bearerToken string, photoRequest utils.UploadedPhoto) utils.Response
 	GetMagicCardById(id uuid.UUID, bearerToken string) utils.Response
 	GetAllMagicCard(bearerToken string) utils.Response
-	UpdateMagicCard(magicCard utils.MagicCardRequest, bearerToken string) utils.Response
+	CreateSenyawaAndIntegrateToMagicCard(magicCardId uuid.UUID, bearerToken string, senyawa utils.SenyawaRequest) utils.Response
+	UpdateMagicCard(uuid uuid.UUID, magicCard utils.MagicCardRequest, bearerToken string, photoRequest utils.UploadedPhoto) utils.Response
 	DeleteMagicCard(id uuid.UUID, bearerToken string) utils.Response
 }
 

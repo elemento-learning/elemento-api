@@ -77,6 +77,17 @@ func (controller *ModulController) CreateNewModul(c echo.Context) error {
 	return c.JSON(response.StatusCode, response)
 }
 
+func (controller *ModulController) GetModul(c echo.Context) error {
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return c.JSON(401, "Unauthorized")
+	}
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+
+	response := controller.modulService.GetModul(token)
+	return c.JSON(response.StatusCode, response)
+}
+
 func (controller *ModulController) CreateBabAndIntegrateToModul(c echo.Context) error {
 	authorizationHeader := c.Request().Header.Get("Authorization")
 	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {

@@ -117,6 +117,32 @@ func (service *modulService) CreateNewModul(modul utils.ModulRequest, bearerToke
 	response.Data = newModul
 	return response
 }
+
+func (service *modulService) GetModul(bearerToken string) utils.Response {
+	if bearerToken == "" {
+		return utils.Response{
+			StatusCode: 401,
+			Messages:   "Unauthorized",
+			Data:       nil,
+		}
+
+	}
+
+	var response utils.Response
+	moduls, err := service.modulRepo.GetAllModul()
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal mendapatkan modul"
+		response.Data = nil
+		return response
+	}
+
+	response.StatusCode = 200
+	response.Messages = "Berhasil mendapatkan modul"
+	response.Data = moduls
+	return response
+}
+
 func (service *modulService) CreateBabAndIntegrateToModul(modulId uuid.UUID, bearerToken string, bab utils.BabRequest) utils.Response {
 
 	if bearerToken == "" {
@@ -182,27 +208,11 @@ func (service *modulService) GetModulById(id uuid.UUID) utils.Response {
 	return response
 }
 
-func (service *modulService) GetModul() utils.Response {
-	var response utils.Response
-	moduls, err := service.modulRepo.GetAllModul()
-	if err != nil {
-		response.StatusCode = 500
-		response.Messages = "Gagal mendapatkan modul"
-		response.Data = nil
-		return response
-	}
-
-	response.StatusCode = 200
-	response.Messages = "Berhasil mendapatkan modul"
-	response.Data = moduls
-	return response
-}
-
 type ModulService interface {
 	CreateNewModul(modul utils.ModulRequest, bearerToken string, photoRequest utils.UploadedPhoto) utils.Response
 	GetModulById(id uuid.UUID) utils.Response
 	CreateBabAndIntegrateToModul(modulId uuid.UUID, bearerToken string, bab utils.BabRequest) utils.Response
-	GetModul() utils.Response
+	GetModul(bearerToken string) utils.Response
 }
 
 func NewModulService(db *gorm.DB) ModulService {
