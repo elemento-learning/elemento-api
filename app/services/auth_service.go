@@ -197,7 +197,7 @@ func (service *authService) GetLoggedInUser(bearerToken string) utils.Response {
 			firstname = names[0]
 			lastname = names[len(names)-1]
 		}
-		if user.Role != "admin" {
+		if user.Role != "guru" {
 			response.Data = map[string]interface{}{
 				"idUser":    user.IdUser,
 				"firstName": firstname,
@@ -284,5 +284,6 @@ func NewAuthService(db *gorm.DB) AuthService {
 	return &authService{
 		authRepo:   repositories.NewDBUserRepository(db),
 		schoolRepo: repositories.NewSchoolRepository(db),
+		classRepo:  repositories.NewClassRepository(db),
 	}
 }

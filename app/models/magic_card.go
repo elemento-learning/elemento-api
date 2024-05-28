@@ -13,6 +13,7 @@ type MagicCard struct {
 	Image        string    `gorm:"column:image;type:text;"`
 	ImageUrl     string    `gorm:"column:image_url;type:text;"`
 	Description  string    `gorm:"column:desc;type:text;"`
+	Audio        string    `gorm:"column:audio;type:text;"`
 	ListSenyawa  []Senyawa `gorm:"foreignKey:MagicCardId;"`
 }
 
