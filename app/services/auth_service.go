@@ -14,7 +14,9 @@ import (
 )
 
 type authService struct {
-	authRepo repositories.UserRepository
+	authRepo   repositories.UserRepository
+	schoolRepo repositories.SchoolRepository
+	classRepo  repositories.ClassRepository
 }
 
 func (service *authService) Login(email, password string) utils.Response {
@@ -128,11 +130,13 @@ func (service *authService) Register(registerRequest utils.UserRequest) utils.Re
 	}
 
 	user = models.User{
-		IdUser:   userId,
-		Fullname: registerRequest.Fullname,
-		Email:    registerRequest.Email,
-		Password: string(hashedPassword),
-		Role:     registerRequest.Role,
+		IdUser:    userId,
+		Fullname:  registerRequest.Fullname,
+		Email:     registerRequest.Email,
+		Password:  string(hashedPassword),
+		Role:      registerRequest.Role,
+		IdKelas:   registerRequest.IdKelas,
+		IdSekolah: registerRequest.IdSekolah,
 	}
 
 	err = service.authRepo.CreateNewUser(user)
@@ -166,6 +170,23 @@ func (service *authService) GetLoggedInUser(bearerToken string) utils.Response {
 			return response
 		}
 
+		//Get School from school Id
+		school, err := service.schoolRepo.GetSchoolById(user.IdSekolah)
+		if err != nil {
+			response.StatusCode = 500
+			response.Messages = "Sekolah tidak ditemukan"
+			response.Data = nil
+			return response
+		}
+
+		//Get Kelas from school Id
+		kelas, err := service.classRepo.GetClassBySchoolId(user.IdSekolah)
+		if err != nil {
+			response.StatusCode = 500
+			response.Messages = "Kelas tidak ditemukan"
+			response.Data = nil
+		}
+
 		response.StatusCode = 200
 		response.Messages = "success"
 		names := strings.Split(user.Fullname, " ")
@@ -191,6 +212,14 @@ func (service *authService) GetLoggedInUser(bearerToken string) utils.Response {
 				"lastName":  lastname,
 				"email":     user.Email,
 				"role":      user.Role,
+				"school": map[string]interface{}{
+					"idSekolah":   school.SchoolID,
+					"namaSekolah": school.Name,
+				},
+				"kelas": map[string]interface{}{
+					"idKelas":   kelas[0].ClassID,
+					"namaKelas": kelas[0].Name,
+				},
 			}
 		}
 		return response
@@ -253,6 +282,7 @@ type AuthService interface {
 
 func NewAuthService(db *gorm.DB) AuthService {
 	return &authService{
-		authRepo: repositories.NewDBUserRepository(db),
+		authRepo:   repositories.NewDBUserRepository(db),
+		schoolRepo: repositories.NewSchoolRepository(db),
 	}
 }

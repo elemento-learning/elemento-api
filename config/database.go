@@ -21,7 +21,7 @@ type Config struct {
 }
 
 func InitDB() *gorm.DB {
-	viper.SetConfigFile("prod.yaml")
+	viper.SetConfigFile("config.yaml")
 	err := viper.ReadInConfig()
 	if err != nil {
 		fmt.Println("Error reading config file :", err)

@@ -48,15 +48,7 @@ func (service *magicCardService) CreateMagicCard(magicCard utils.MagicCardReques
 		Description:  magicCard.Description,
 	}
 
-	for _, senyawa := range magicCard.ListSenyawa {
-		newSenyawa := models.Senyawa{
-			Judul:     senyawa.Judul,
-			Unsur:     senyawa.Unsur,
-			Deskripsi: senyawa.Deskripsi,
-		}
-
-		newMagicCard.ListSenyawa = append(newMagicCard.ListSenyawa, newSenyawa)
-	}
+	newMagicCard.ID = uuid.New()
 
 	opt := option.WithCredentialsFile("config/config.json")
 	app, err := firebase.NewApp(context.Background(), nil, opt)
@@ -76,6 +68,10 @@ func (service *magicCardService) CreateMagicCard(magicCard utils.MagicCardReques
 		return response
 	}
 
+	formattedTitle := utils.FormatTitleFromFirebase(newMagicCard.NamaMolekul)
+	storagePath := "magic_card/" + formattedTitle + "/" + photoRequest.Handler.Filename
+	reader := photoRequest.File
+
 	bucket, err := client.Bucket("elemento-84e6b.appspot.com")
 	if err != nil {
 		response.StatusCode = 500
@@ -83,10 +79,6 @@ func (service *magicCardService) CreateMagicCard(magicCard utils.MagicCardReques
 		response.Data = nil
 		return response
 	}
-
-	formattedTitle := utils.FormatTitleFromFirebase(newMagicCard.NamaMolekul)
-	storagePath := "magic_card/" + formattedTitle + "/" + photoRequest.Handler.Filename
-	reader := photoRequest.File
 
 	wc := bucket.Object(storagePath).NewWriter(context.Background())
 	wc.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
@@ -96,6 +88,14 @@ func (service *magicCardService) CreateMagicCard(magicCard utils.MagicCardReques
 		response.Messages = "Gagal mengupload foto ke firebase storage"
 		response.Data = nil
 		return response
+	}
+
+	if err := wc.Close(); err != nil {
+		return utils.Response{
+			StatusCode: 500,
+			Messages:   "Failed to close Firebase Storage writer" + err.Error(),
+			Data:       nil,
+		}
 	}
 
 	newMagicCard.Image = photoRequest.Alias + "/" + storagePath
@@ -128,7 +128,7 @@ func (service *magicCardService) GetMagicCardById(id uuid.UUID, bearerToken stri
 	}
 
 	var response utils.Response
-	magicCard, err := service.magicRepo.GetMagicCardById(id)
+	magicCard, err := service.magicRepo.RetrieveUpdatedMagicCardWithAssociatedSenyawa(id)
 	if err != nil {
 		response.StatusCode = 500
 		response.Messages = "Gagal mendapatkan kartu magic"
@@ -162,7 +162,7 @@ func (service *magicCardService) GetAllMagicCard(bearerToken string) utils.Respo
 		return response
 	}
 	response.StatusCode = 200
-	response.Messages = "Berhasil mendapatkan kartu magic oleh" + teacherId.String()
+	response.Messages = "Berhasil mendapatkan kartu magic oleh " + teacherId.String()
 	response.Data = magicCards
 	return response
 
@@ -207,9 +207,10 @@ func (service *magicCardService) CreateSenyawaAndIntegrateToMagicCard(magicCardI
 	}
 
 	newSenyawa := models.Senyawa{
-		Judul:     senyawa.Judul,
-		Unsur:     senyawa.Unsur,
-		Deskripsi: senyawa.Deskripsi,
+		Judul:       senyawa.Judul,
+		Unsur:       senyawa.Unsur,
+		Deskripsi:   senyawa.Deskripsi,
+		MagicCardId: magicCardId,
 	}
 
 	err := service.senyawaRepo.CreateNewSenyawa(newSenyawa)
@@ -252,5 +253,5 @@ type MagicCardService interface {
 }
 
 func NewMagicCardService(db *gorm.DB) MagicCardService {
-	return &magicCardService{magicRepo: repositories.NewMagicCardRepository(db)}
+	return &magicCardService{magicRepo: repositories.NewMagicCardRepository(db), senyawaRepo: repositories.NewSenyawaRepository(db)}
 }

@@ -62,6 +62,8 @@ func (controller *AuthController) Register(c echo.Context) error {
 		Password             string `json:"password" validate:"required"`
 		PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 		Role                 string `json:"role"`
+		IdKelas              string `json:"id_kelas"`
+		IdSekolah            string `json:"id_sekolah"`
 	}
 
 	payloadValidator := new(payload)

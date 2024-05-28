@@ -21,6 +21,12 @@ func (db *dbClass) GetClassById(id uuid.UUID) (models.Class, error) {
 	return class, err
 }
 
+func (db *dbClass) GetClassBySchoolId(schoolId uuid.UUID) ([]models.Class, error) {
+	var classes []models.Class
+	err := db.Conn.Where("school_id = ?", schoolId).Find(&classes).Error
+	return classes, err
+}
+
 func (db *dbClass) GetAllClass() ([]models.Class, error) {
 	var classes []models.Class
 	err := db.Conn.Find(&classes).Error
@@ -52,4 +58,5 @@ type ClassRepository interface {
 	GetAllClass() ([]models.Class, error)
 	UpdateClass(class models.Class) error
 	DeleteClass(id uuid.UUID) error
+	GetClassBySchoolId(schoolId uuid.UUID) ([]models.Class, error)
 }

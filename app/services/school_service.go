@@ -56,6 +56,35 @@ func (s *schoolService) CreateNewSchool(school utils.SchoolRequest, bearerToken 
 	}
 }
 
+//GetKelasBySchoolId is a function to get class by school id
+
+func (s *schoolService) GetKelasBySchoolId(uuid uuid.UUID, bearerToken string) utils.Response {
+	teacherId, err := utils.ParseDataId(bearerToken)
+
+	if err != nil {
+		return utils.Response{
+			StatusCode: 401,
+			Messages:   "Unauthorized",
+			Data:       nil,
+		}
+
+	}
+
+	var response utils.Response
+	classes, err := s.classRepo.GetClassBySchoolId(uuid)
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal mendapatkan kelas"
+		response.Data = nil
+		return response
+	}
+
+	response.StatusCode = 200
+	response.Messages = "Berhasil mendapatkan kelas oleh" + teacherId.String()
+	response.Data = classes
+	return response
+}
+
 // GetSchoolById is a function to get school by id
 func (s *schoolService) GetSchoolById(uuid uuid.UUID, bearerToken string) utils.Response {
 	teacherId, err := utils.ParseDataId(bearerToken)
@@ -175,6 +204,33 @@ func (s *schoolService) DeleteSchool(uuid uuid.UUID, bearerToken string) utils.R
 	return response
 }
 
+func (s *schoolService) GetClassBySchoolId(uuid uuid.UUID, bearerToken string) utils.Response {
+	teacherId, err := utils.ParseDataId(bearerToken)
+
+	if err != nil {
+		return utils.Response{
+			StatusCode: 401,
+			Messages:   "Unauthorized",
+			Data:       nil,
+		}
+
+	}
+
+	var response utils.Response
+	classes, err := s.classRepo.GetClassBySchoolId(uuid)
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal mendapatkan kelas"
+		response.Data = nil
+		return response
+	}
+
+	response.StatusCode = 200
+	response.Messages = "Berhasil mendapatkan kelas oleh" + teacherId.String()
+	response.Data = classes
+	return response
+}
+
 // IntegrateClassToSchool is a function to integrate class to school
 func (s *schoolService) IntegrateClassToSchool(schoolId uuid.UUID, class utils.ClassRequest, bearerToken string) utils.Response {
 	teacherId, err := utils.ParseDataId(bearerToken)
@@ -222,6 +278,7 @@ type SchoolService interface {
 	UpdateSchool(school utils.SchoolRequest, bearerToken string) utils.Response
 	DeleteSchool(uuid uuid.UUID, bearerToken string) utils.Response
 	IntegrateClassToSchool(schoolId uuid.UUID, class utils.ClassRequest, bearerToken string) utils.Response
+	GetClassBySchoolId(uuid uuid.UUID, bearerToken string) utils.Response
 }
 
 // NewSchoolService is a function to create new school service

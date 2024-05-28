@@ -43,8 +43,14 @@ func (db *dbMagicCard) DeleteMagicCard(id uuid.UUID) error {
 }
 
 func (db *dbMagicCard) IntegrateSenyawaToMagicCard(magicCard models.MagicCard, senyawa models.Senyawa) error {
-	err := db.Conn.Model(&magicCard).Association("Senyawa").Append(&senyawa)
+	err := db.Conn.Model(&magicCard).Association("ListSenyawa").Append(&senyawa)
 	return err
+}
+
+func (db *dbMagicCard) RetrieveUpdatedMagicCardWithAssociatedSenyawa(uuid uuid.UUID) (models.MagicCard, error) {
+	var magicCard models.MagicCard
+	err := db.Conn.Preload("ListSenyawa").Where("id = ?", uuid).First(&magicCard).Error
+	return magicCard, err
 }
 
 type MagicCardRepository interface {
@@ -53,6 +59,7 @@ type MagicCardRepository interface {
 	GetAllMagicCard() ([]models.MagicCard, error)
 	UpdateMagicCard(magicCard models.MagicCard) error
 	IntegrateSenyawaToMagicCard(magicCard models.MagicCard, senyawa models.Senyawa) error
+	RetrieveUpdatedMagicCardWithAssociatedSenyawa(uuid uuid.UUID) (models.MagicCard, error)
 	DeleteMagicCard(id uuid.UUID) error
 }
 

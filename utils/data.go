@@ -13,7 +13,7 @@ func ParseDataEmail(bearerToken string) (email string, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("kalorize"), nil
+		return []byte("elemento"), nil
 	})
 
 	if err != nil {
@@ -38,7 +38,7 @@ func ParseDataFullname(bearerToken string) (email string, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("kalorize"), nil
+		return []byte("elemento"), nil
 	})
 
 	if err != nil {
@@ -63,7 +63,7 @@ func ParseDataId(bearerToken string) (id uuid.UUID, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("kalorize"), nil
+		return []byte("elemento"), nil
 	})
 	if err != nil {
 		log.Printf("Error parsing JWT token: %v", err)
