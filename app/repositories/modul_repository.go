@@ -33,10 +33,9 @@ func (db *dbModul) IntegrateBabToModul(modul models.Modul, bab models.Bab) error
 }
 
 func (db *dbModul) RetrieveUpdatedModulWithAssociatedBab(id uuid.UUID) (models.Modul, error) {
-	var modul models.Modul
-	err := db.Conn.Preload("Babs").Where("id = ?", id).First(&modul).Error
-	return modul, err
-
+	var moduls models.Modul
+	err := db.Conn.Preload("Babs").First(&moduls, id).Error
+	return moduls, err
 }
 
 func (db *dbModul) UpdateModul(modul models.Modul) error {

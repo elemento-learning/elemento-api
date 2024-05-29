@@ -57,12 +57,8 @@ func (controller *SchoolController) CreateNewSchool(c echo.Context) error {
 }
 
 func (controller *SchoolController) GetClassBySchoolId(c echo.Context) error {
-	authorizationHeader := c.Request().Header.Get("Authorization")
-	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
-		return c.JSON(401, "Unauthorized")
-	}
-
-	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+	
+	
 	schoolId := c.Param("id")
 
 	uuid, err := uuid.Parse(schoolId)
@@ -70,19 +66,13 @@ func (controller *SchoolController) GetClassBySchoolId(c echo.Context) error {
 		return c.JSON(400, "Invalid school id")
 	}
 
-	response := controller.schoolService.GetClassBySchoolId(uuid, token)
+	response := controller.schoolService.GetClassBySchoolId(uuid)
 	return c.JSON(response.StatusCode, response)
 }
 
 func (controller *SchoolController) GetAllSchool(c echo.Context) error {
-	authorizationHeader := c.Request().Header.Get("Authorization")
-	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
-		return c.JSON(401, "Unauthorized")
-	}
 
-	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
-
-	response := controller.schoolService.GetAllSchool(token)
+	response := controller.schoolService.GetAllSchool()
 	return c.JSON(response.StatusCode, response)
 }
 
@@ -101,18 +91,7 @@ func (controller *SchoolController) GetSchoolById(c echo.Context) error {
 	}
 
 	response := controller.schoolService.GetSchoolById(uuid, token)
-	return c.JSON(response.StatusCode, response)
-}
 
-func (controller *SchoolController) GetAllSchools(c echo.Context) error {
-	authorizationHeader := c.Request().Header.Get("Authorization")
-	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
-		return c.JSON(401, "Unauthorized")
-	}
-
-	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
-
-	response := controller.schoolService.GetAllSchool(token)
 	return c.JSON(response.StatusCode, response)
 }
 

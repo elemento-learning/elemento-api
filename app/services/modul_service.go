@@ -194,7 +194,7 @@ func (service *modulService) CreateBabAndIntegrateToModul(modulId uuid.UUID, bea
 
 func (service *modulService) GetModulById(id uuid.UUID) utils.Response {
 	var response utils.Response
-	modul, err := service.modulRepo.RetrieveUpdatedModulWithAssociatedBab(id)
+		modul, err := service.modulRepo.RetrieveUpdatedModulWithAssociatedBab(id)
 
 	if err != nil {
 		response.StatusCode = 500

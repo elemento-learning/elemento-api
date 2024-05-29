@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	vl "github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
@@ -57,13 +58,13 @@ func (controller *AuthController) Login(c echo.Context) error {
 
 func (controller *AuthController) Register(c echo.Context) error {
 	type payload struct {
-		NamaLengkap          string `json:"namaLengkap" validate:"required"`
-		Email                string `json:"email" validate:"required,email"`
-		Password             string `json:"password" validate:"required"`
-		PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
-		Role                 string `json:"role"`
-		IdKelas              string `json:"id_kelas"`
-		IdSekolah            string `json:"id_sekolah"`
+		NamaLengkap          string    `json:"namaLengkap" validate:"required"`
+		Email                string    `json:"email" validate:"required,email"`
+		Password             string    `json:"password" validate:"required"`
+		PasswordConfirmation string    `json:"passwordConfirmation" validate:"required,eqfield=Password"`
+		Role                 string    `json:"role"`
+		IdKelas              uuid.UUID `json:"id_kelas"`
+		IdSekolah            uuid.UUID `json:"id_sekolah"`
 	}
 
 	payloadValidator := new(payload)
@@ -77,6 +78,8 @@ func (controller *AuthController) Register(c echo.Context) error {
 	}
 	var regisUserPayload utils.UserRequest = utils.UserRequest{
 		Fullname:             payloadValidator.NamaLengkap,
+		IdKelas:              payloadValidator.IdKelas,
+		IdSekolah:            payloadValidator.IdSekolah,
 		Email:                payloadValidator.Email,
 		Password:             payloadValidator.Password,
 		PasswordConfirmation: payloadValidator.PasswordConfirmation,
