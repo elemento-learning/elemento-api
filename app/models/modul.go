@@ -18,12 +18,10 @@ type Modul struct {
 
 type Bab struct {
 	gorm.Model
-	TitleID       uuid.UUID `gorm:"column:id;type:char(36);primary_key;"`
-	Title         string    `gorm:"column:nama_bab;type:varchar(255);"`
-	Description   string    `gorm:"column:deskripsi;type:text"`
-	Task          string    `gorm:"column:task;type:text"`
-	ResultStudent string    `gorm:"column:result;type:text"`
-	ModulID       uuid.UUID `gorm:"column:modul_id;type:char(36);"`
+	ModulID     uuid.UUID `gorm:"column:bab_modul;type:char(36);"`
+	Title       string    `gorm:"column:nama_bab;type:varchar(255);"`
+	Description string    `gorm:"column:deskripsi;type:text"`
+	Task        string    `gorm:"column:task;type:text"`
 }
 
 func (u *Modul) TableName() string {

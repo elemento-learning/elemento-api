@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"elemento-api/app/models"
+	"log"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -12,39 +13,53 @@ type dbClass struct {
 }
 
 func (db *dbClass) CreateNewClass(class models.Class) error {
-	return db.Conn.Create(&class).Error
+	err := db.Conn.Create(&class).Error
+	if err != nil {
+		log.Printf("Error creating new class: %v", err)
+	}
+	return err
 }
 
 func (db *dbClass) GetClassById(id uuid.UUID) (models.Class, error) {
 	var class models.Class
 	err := db.Conn.Where("id = ?", id).First(&class).Error
+	if err != nil {
+		log.Printf("Error getting class by ID: %v", err)
+	}
 	return class, err
 }
 
 func (db *dbClass) GetClassBySchoolId(schoolId uuid.UUID) ([]models.Class, error) {
 	var classes []models.Class
 	err := db.Conn.Where("school_id = ?", schoolId).Find(&classes).Error
+	if err != nil {
+		log.Printf("Error getting classes by school ID: %v", err)
+	}
 	return classes, err
 }
 
 func (db *dbClass) GetAllClass() ([]models.Class, error) {
 	var classes []models.Class
 	err := db.Conn.Find(&classes).Error
+	if err != nil {
+		log.Printf("Error getting all classes: %v", err)
+	}
 	return classes, err
 }
 
 func (db *dbClass) UpdateClass(class models.Class) error {
-
 	err := db.Conn.Save(&class).Error
 	if err != nil {
-		return err // Mengembalikan error yang terjadi saat menyimpan data
+		log.Printf("Error updating class: %v", err)
 	}
-	return nil
+	return err
 }
 
 func (db *dbClass) DeleteClass(id uuid.UUID) error {
-	var class models.Class
-	err := db.Conn.Where("id = ?", id).Delete(&class).Error
+	err := db.Conn.Where("id = ?", id).Delete(&models.Class{}).Error
+	if err != nil {
+		log.Printf("Error deleting class: %v", err)
+	}
 	return err
 }
 

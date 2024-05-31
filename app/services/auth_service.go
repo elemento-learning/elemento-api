@@ -197,31 +197,23 @@ func (service *authService) GetLoggedInUser(bearerToken string) utils.Response {
 			firstname = names[0]
 			lastname = names[len(names)-1]
 		}
-		if user.Role != "guru" {
-			response.Data = map[string]interface{}{
-				"idUser":    user.IdUser,
-				"firstName": firstname,
-				"lastName":  lastname,
-				"email":     user.Email,
-				"role":      user.Role,
-			}
-		} else {
-			response.Data = map[string]interface{}{
-				"idUser":    user.IdUser,
-				"firstName": firstname,
-				"lastName":  lastname,
-				"email":     user.Email,
-				"role":      user.Role,
-				"school": map[string]interface{}{
-					"idSekolah":   school.SchoolID,
-					"namaSekolah": school.Name,
-				},
-				"kelas": map[string]interface{}{
-					"idKelas":   kelas[0].ClassID,
-					"namaKelas": kelas[0].Name,
-				},
-			}
+
+		response.Data = map[string]interface{}{
+			"idUser":    user.IdUser,
+			"firstName": firstname,
+			"lastName":  lastname,
+			"email":     user.Email,
+			"role":      user.Role,
+			"school": map[string]interface{}{
+				"idSekolah":   school.SchoolID,
+				"namaSekolah": school.Name,
+			},
+			"kelas": map[string]interface{}{
+				"idKelas":   kelas[0].ClassID,
+				"namaKelas": kelas[0].Name,
+			},
 		}
+
 		return response
 	} else {
 		response.StatusCode = 401

@@ -7,15 +7,8 @@ import (
 )
 
 func AutoMigration(db *gorm.DB) {
-	// db.AutoMigrate(&models.User{})
-	// db.AutoMigrate(&models.MagicCard{})
-	db.AutoMigrate(&models.Bab{})
-	// db.AutoMigrate(&models.Senyawa{})
-	// db.AutoMigrate(&models.Modul{})
-	// db.AutoMigrate(&models.School{})
-	// db.AutoMigrate(&models.Class{})
-	// db.AutoMigrate(&models.Quiz{})
-	// db.AutoMigrate(&models.Answer{})
-	// db.AutoMigrate(&models.Question{})
+	db.AutoMigrate(&models.Quiz{})
+	db.AutoMigrate(&models.Answer{})
+	db.AutoMigrate(&models.Question{})
 
 }

@@ -11,16 +11,16 @@ type Quiz struct {
 	QuizID   uuid.UUID  `gorm:"column:id;type:char(36);primary_key;"`
 	Title    string     `gorm:"column:title;type:varchar(255);"`
 	Status   string     `gorm:"column:status;type:varchar(255);"`
-	Question []Question `gorm:"foreignKey:QuizID;references:QuizID"`
+	Question []Question `gorm:"foreignKey:QuizID"`
 }
 
 type Question struct {
 	gorm.Model
-	QuestionID uuid.UUID `gorm:"column:id;type:char(36);primary_key;"`
-	QuizID     uuid.UUID `gorm:"column:quiz_id;type:char(36);"`
-	Question   string    `gorm:"column:question;type:varchar(255);"`
-	Answer     []Answer  `gorm:"foreignKey:QuestionID;references:QuestionID"`
-	AnswerQuiz uuid.UUID `gorm:"column:answer_quiz;type:char(36);"`
+	QuestionID    uuid.UUID `gorm:"column:id;type:char(36);primary_key;"`
+	QuizID        uuid.UUID `gorm:"column:quiz_id;type:char(36);"`
+	Question      string    `gorm:"column:question;type:varchar(255);"`
+	Answer        []Answer  `gorm:"foreignKey:QuestionID"`
+	CorrectAnswer uuid.UUID `gorm:"column:correct_answer;type:char(36);"`
 }
 
 type Answer struct {
@@ -28,6 +28,7 @@ type Answer struct {
 	AnswerID       uuid.UUID `gorm:"column:id;type:char(36);primary_key;"`
 	AnswerTitle    string    `gorm:"column:answer_title;type:varchar(255);"`
 	AnswerSubtitle string    `gorm:"column:answer_subtitle;type:varchar(255);"`
+	QuestionID     uuid.UUID `gorm:"column:question_id;type:char(36);"`
 }
 
 func (Quiz) TableName() string {
