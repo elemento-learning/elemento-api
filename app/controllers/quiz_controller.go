@@ -25,6 +25,46 @@ func NewQuizController(db *gorm.DB) QuizController {
 	return controller
 }
 
+func (controller *QuizController) GetLeaderboard(c echo.Context) error {
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return c.JSON(401, "Unauthorized")
+	}
+
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+
+	response := controller.quizService.GetLeaderboard(token)
+	return c.JSON(response.StatusCode, response)
+}
+
+func (controller *QuizController) SubmitQuiz(c echo.Context) error {
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return c.JSON(401, "Unauthorized")
+	}
+
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+
+	type payload struct {
+		QuizID string                    `json:"quiz_id" validate:"required"`
+		UserID string                    `json:"user_id" validate:"required"`
+		Answer []utils.UserAnswerRequest `json:"answer" validate:"required"`
+	}
+
+	payloadValidator := new(payload)
+
+	if err := c.Bind(payloadValidator); err != nil {
+		return c.JSON(400, err.Error())
+	}
+
+	quizID := uuid.MustParse(payloadValidator.QuizID)
+	userID := uuid.MustParse(payloadValidator.UserID)
+	answer := payloadValidator.Answer
+
+	response := controller.quizService.SubmitQuiz(quizID, userID, answer, token)
+	return c.JSON(response.StatusCode, response)
+}
+
 func (controller *QuizController) GetQuestionQuiz(c echo.Context) error {
 
 	authorizationHeader := c.Request().Header.Get("Authorization")

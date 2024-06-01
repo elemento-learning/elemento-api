@@ -4,15 +4,126 @@ import (
 	"elemento-api/app/models"
 	"elemento-api/app/repositories"
 	"elemento-api/utils"
+	"sort"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type QuizService struct {
-	quizRepository     repositories.QuizRepository
-	questionRepository repositories.QuestionRepository
-	answerRepository   repositories.AnswerRepository
+	quizRepository       repositories.QuizRepository
+	questionRepository   repositories.QuestionRepository
+	answerRepository     repositories.AnswerRepository
+	userResultRepository repositories.UserResultRepository
+}
+
+// Get Leaderboard
+func (service *QuizService) GetLeaderboard(bearerToken string) utils.Response {
+	if bearerToken == "" {
+		return utils.Response{
+			StatusCode: 401,
+			Messages:   "Unauthorized",
+			Data:       nil,
+		}
+	}
+
+	var leaderboard []utils.StudentScore
+	users, err := service.userResultRepository.GetUserResult()
+	if err != nil {
+		return utils.Response{
+			StatusCode: 500,
+			Messages:   "Gagal mendapatkan data users",
+			Data:       nil,
+		}
+	}
+
+	for _, user := range users {
+		leaderboard = append(leaderboard, utils.StudentScore{
+			Score: user.Score,
+		})
+	}
+
+	sort.SliceStable(leaderboard, func(i, j int) bool {
+		return leaderboard[i].Score > leaderboard[j].Score
+	})
+
+	return utils.Response{
+		StatusCode: 200,
+		Messages:   "Berhasil mendapatkan data leaderboard",
+		Data:       leaderboard,
+	}
+}
+
+// Submit Quiz
+func (service *QuizService) SubmitQuiz(quizID, userID uuid.UUID, answers []utils.UserAnswerRequest, bearerToken string) utils.Response {
+	if bearerToken == "" {
+		return utils.Response{
+			StatusCode: 401,
+			Messages:   "Unauthorized",
+			Data:       nil,
+		}
+
+	}
+
+	var response utils.Response
+	if quizID == uuid.Nil || userID == uuid.Nil || len(answers) == 0 {
+		response.StatusCode = 400
+		response.Messages = "QuizID, UserID, dan Answer tidak boleh kosong"
+		response.Data = nil
+		return response
+	}
+
+	quiz, err := service.quizRepository.RetrieveUpdatedQuizWithQuestionAndAnswer(quizID)
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal mendapatkan data quiz"
+		response.Data = nil
+		return response
+	}
+
+	var score int
+	var newUserAnswer []models.UserAnswer
+	var newUserResult models.UserResult = models.UserResult{
+		UserResultID: uuid.New(),
+		UserID:       userID,
+		QuizID:       quizID,
+		CountAnswer:  len(answers),
+	}
+
+	for _, answer := range answers {
+		for _, question := range quiz.Question {
+			if question.QuestionID == answer.QuestionID {
+				for _, correctAnswer := range question.Answer {
+					if correctAnswer.AnswerID == answer.AnswerID {
+						score += 1
+					}
+
+					newUserAnswer = append(newUserAnswer, models.UserAnswer{
+						TitleQuestion: question.Question,
+						AnswerQuestion: models.Answer{
+							AnswerID:       correctAnswer.AnswerID,
+							AnswerTitle:    correctAnswer.AnswerTitle,
+							AnswerSubtitle: correctAnswer.AnswerSubtitle,
+						},
+					})
+				}
+			}
+		}
+	}
+	newUserResult.Score = score
+	newUserResult.Answer = newUserAnswer
+	err = service.userResultRepository.CreateUserResult(newUserResult)
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal submit quiz"
+		response.Data = nil
+		return response
+	}
+
+	response.StatusCode = 200
+	response.Messages = "Berhasil submit quiz"
+	response.Data = newUserResult
+	return response
 }
 
 // Create Answer And Integrate To Question
@@ -201,8 +312,9 @@ func (service *QuizService) GetQuestionQuiz(quizID uuid.UUID, bearerToken string
 
 func NewQuizService(db *gorm.DB) QuizService {
 	return QuizService{
-		quizRepository:     repositories.NewQuizRepository(db),
-		questionRepository: repositories.NewQuestionRepository(db),
-		answerRepository:   repositories.NewAnswerRepository(db),
+		quizRepository:       repositories.NewQuizRepository(db),
+		questionRepository:   repositories.NewQuestionRepository(db),
+		answerRepository:     repositories.NewAnswerRepository(db),
+		userResultRepository: repositories.NewUserResultRepository(db),
 	}
 }

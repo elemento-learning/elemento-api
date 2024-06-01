@@ -8,3 +8,8 @@ type AnswerRequest struct {
 	AnswerSubtitle string
 	QuestionID     uuid.UUID
 }
+
+type UserAnswerRequest struct {
+	QuestionID uuid.UUID
+	AnswerID   uuid.UUID
+}
