@@ -108,10 +108,41 @@ func (service *FeedbackService) GetFeedbacks(bearerToken string) utils.Response 
 		}
 	}
 
+	feedbacksData := []map[string]interface{}{}
+	for _, feedback := range feedbacks {
+		student, err := service.userRepository.GetUserById(feedback.StudentID)
+		if err != nil {
+			return utils.Response{
+				StatusCode: 500,
+				Messages:   "Gagal mendapatkan data student",
+				Data:       nil,
+			}
+
+		}
+		teacher, err := service.userRepository.GetUserById(feedback.TeacherID)
+		if err != nil {
+			return utils.Response{
+				StatusCode: 500,
+				Messages:   "Gagal mendapatkan data teacher",
+				Data:       nil,
+			}
+		}
+
+		feedbackData := map[string]interface{}{
+			"feedback_id": feedback.FeedBackID,
+			"student":     student.Fullname,
+			"teacher":     teacher.Fullname,
+			"feedback":    feedback.FeedBack,
+			"category":    feedback.Category,
+		}
+
+		feedbacksData = append(feedbacksData, feedbackData)
+	}
+
 	return utils.Response{
 		StatusCode: 200,
 		Messages:   "Berhasil mendapatkan feedback",
-		Data:       feedbacks,
+		Data:       feedbacksData,
 	}
 }
 

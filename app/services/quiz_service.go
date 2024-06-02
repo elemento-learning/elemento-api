@@ -50,6 +50,7 @@ func (service *QuizService) GetLeaderboard(bearerToken string) utils.Response {
 
 		leaderboard = append(leaderboard, utils.StudentScore{
 			Score:     user.Score,
+			ID:        user.UserResultID,
 			StudentID: user.UserID,
 			Name:      userName.Fullname,
 		})
@@ -114,17 +115,24 @@ func (service *QuizService) SubmitQuiz(quizID uuid.UUID, answers []utils.UserAns
 	for _, answer := range answers {
 		for _, question := range quiz.Question {
 			if question.QuestionID == answer.QuestionID {
-				for _, correctAnswer := range question.Answer {
-					if correctAnswer.AnswerID == answer.AnswerID {
-						score += 1
-						newUserAnswer = append(newUserAnswer, models.UserAnswer{
-							UserAnswerID:       uuid.New(),
-							TitleQuestion:      question.Question,
-							UserAnswerTitle:    correctAnswer.AnswerTitle,
-							UserAnswerSubtitle: correctAnswer.AnswerSubtitle,
-						})
+				if question.CorrectAnswer == answer.AnswerID {
+					score += 1
+					answerUser, err := service.answerRepository.GetAnswerById(answer.AnswerID)
+					if err != nil {
+						response.StatusCode = 500
+						response.Messages = "Gagal mendapatkan data answer"
+						response.Data = nil
+						return response
 					}
+
+					newUserAnswer = append(newUserAnswer, models.UserAnswer{
+						UserAnswerID:       uuid.New(),
+						TitleQuestion:      question.Question,
+						UserAnswerTitle:    answerUser.AnswerTitle,
+						UserAnswerSubtitle: answerUser.AnswerSubtitle,
+					})
 				}
+
 			}
 		}
 	}

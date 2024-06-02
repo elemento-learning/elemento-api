@@ -22,6 +22,7 @@ type Senyawa struct {
 	Judul       string    `gorm:"column:judul;type:varchar(255);"`
 	Unsur       string    `gorm:"column:unsur;type:varchar(255);"`
 	Deskripsi   string    `gorm:"column:desc;contype:text;"`
+	Audio       string    `gorm:"column:audio;type:text;"`
 	MagicCardId uuid.UUID `gorm:"column:magic_card_senyawa;"`
 }
 

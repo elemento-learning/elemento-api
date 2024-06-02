@@ -26,6 +26,20 @@ func NewModulController(db *gorm.DB) ModulController {
 	return controller
 }
 
+func (controller *ModulController) UpdateProgressUser(c echo.Context) error {
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return c.JSON(401, "Unauthorized")
+	}
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+
+	id := c.Param("id")
+	uuid := uuid.MustParse(id)
+
+	response := controller.modulService.UpdateProgressUser(uuid, token)
+	return c.JSON(response.StatusCode, response)
+}
+
 func (controller *ModulController) DeleteBab(c echo.Context) error {
 	authorizationHeader := c.Request().Header.Get("Authorization")
 	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {

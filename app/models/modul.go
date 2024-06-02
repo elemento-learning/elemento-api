@@ -12,6 +12,7 @@ type Modul struct {
 	Subtitle    string    `gorm:"column:subnama_modul;type:varchar(255);"`
 	Image       string    `gorm:"column:image;type:varchar(255);"`
 	ImageUrl    string    `gorm:"column:image_url;type:varchar(255);"`
+	Progress    bool      `gorm:"column:progress;type:boolean;"`
 	YoutubeLink string    `gorm:"column:youtube_link;type:varchar(255);"`
 	Babs        []Bab     `gorm:"foreignkey:ModulID"`
 }

@@ -18,6 +18,7 @@ import (
 type modulService struct {
 	modulRepo repositories.ModulRepository
 	babRepo   repositories.BabRepository
+	userRepo  repositories.UserRepository
 }
 
 func (service *modulService) CreateNewModul(modul utils.ModulRequest, bearerToken string, photoRequest utils.UploadedPhoto) utils.Response {
@@ -256,7 +257,42 @@ func (service *modulService) DeleteBab(id uint, bearerToken string) utils.Respon
 	return response
 }
 
+func (service *modulService) UpdateProgressUser(id uuid.UUID, bearerToken string) utils.Response {
+	if bearerToken == "" {
+		return utils.Response{
+			StatusCode: 401,
+			Messages:   "Unauthorized",
+			Data:       nil,
+		}
+	}
+
+	var response utils.Response
+	modul, err := service.modulRepo.GetModulById(id)
+	if err != nil {
+		response.StatusCode = 400
+		response.Messages = "Gagal mendapatkan id modul"
+		response.Data = nil
+		return response
+	}
+
+	modul.Progress = true
+
+	err = service.modulRepo.UpdateModul(modul)
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal mengupdate progress user"
+		response.Data = nil
+		return response
+	}
+
+	response.StatusCode = 200
+	response.Messages = "Berhasil mengupdate progress user"
+	response.Data = modul
+	return response
+}
+
 type ModulService interface {
+	UpdateProgressUser(id uuid.UUID, bearerToken string) utils.Response
 	DeleteBab(id uint, bearerToken string) utils.Response
 	DeleteModul(id uuid.UUID, bearerToken string) utils.Response
 	CreateNewModul(modul utils.ModulRequest, bearerToken string, photoRequest utils.UploadedPhoto) utils.Response
@@ -266,8 +302,10 @@ type ModulService interface {
 }
 
 func NewModulService(db *gorm.DB) ModulService {
-	return &modulService{modulRepo: repositories.NewModulRepository(db),
-		babRepo: repositories.NewBabRepository(db)}
+	return &modulService{
+		modulRepo: repositories.NewModulRepository(db),
+		babRepo:   repositories.NewBabRepository(db),
+		userRepo:  repositories.NewDBUserRepository(db)}
 }
 
 // Path: app/services/modul_service.go

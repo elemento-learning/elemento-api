@@ -3,6 +3,7 @@ package repositories
 import (
 	"elemento-api/app/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +18,7 @@ func (r *dbAnswer) CreateNewAnswer(answer models.Answer) error {
 }
 
 // GetAnswerById is a function to get answer by id
-func (r *dbAnswer) GetAnswerById(id uint) (models.Answer, error) {
+func (r *dbAnswer) GetAnswerById(id uuid.UUID) (models.Answer, error) {
 	var answer models.Answer
 	err := r.DB.Where("id = ?", id).First(&answer).Error
 	return answer, err
@@ -40,7 +41,7 @@ func (r *dbAnswer) UpdateAnswer(answer models.Answer) error {
 }
 
 // DeleteAnswer is a function to delete answer
-func (r *dbAnswer) DeleteAnswer(id uint) error {
+func (r *dbAnswer) DeleteAnswer(id uuid.UUID) error {
 	var answer models.Answer
 	err := r.DB.Where("id = ?", id).Delete(&answer).Error
 	return err
@@ -49,10 +50,10 @@ func (r *dbAnswer) DeleteAnswer(id uint) error {
 // AnswerRepositoryInterface is an interface for answer repository
 type AnswerRepository interface {
 	CreateNewAnswer(answer models.Answer) error
-	GetAnswerById(id uint) (models.Answer, error)
+	GetAnswerById(id uuid.UUID) (models.Answer, error)
 	GetAllAnswer() ([]models.Answer, error)
 	UpdateAnswer(answer models.Answer) error
-	DeleteAnswer(id uint) error
+	DeleteAnswer(id uuid.UUID) error
 }
 
 // NewAnswerRepository is a function to create new answer repository

@@ -188,11 +188,7 @@ func (controller *MagicCardController) UpdateMagicCard(c echo.Context) error {
 
 func (controller *MagicCardController) DeleteMagicCard(c echo.Context) error {
 	id := c.Param("id")
-	uuid, err := utils.ParseDataId(id)
-
-	if err != nil {
-		return c.JSON(400, err.Error())
-	}
+	uuid := uuid.MustParse(id)
 
 	authorizationHeader := c.Request().Header.Get("Authorization")
 	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
