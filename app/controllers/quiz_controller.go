@@ -46,8 +46,7 @@ func (controller *QuizController) SubmitQuiz(c echo.Context) error {
 	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
 
 	type payload struct {
-		QuizID string                    `json:"quiz_id" validate:"required"`
-		UserID string                    `json:"user_id" validate:"required"`
+		QuizID uuid.UUID                 `json:"quiz_id" validate:"required"`
 		Answer []utils.UserAnswerRequest `json:"answer" validate:"required"`
 	}
 
@@ -57,11 +56,10 @@ func (controller *QuizController) SubmitQuiz(c echo.Context) error {
 		return c.JSON(400, err.Error())
 	}
 
-	quizID := uuid.MustParse(payloadValidator.QuizID)
-	userID := uuid.MustParse(payloadValidator.UserID)
+	quizID := payloadValidator.QuizID
 	answer := payloadValidator.Answer
 
-	response := controller.quizService.SubmitQuiz(quizID, userID, answer, token)
+	response := controller.quizService.SubmitQuiz(quizID, answer, token)
 	return c.JSON(response.StatusCode, response)
 }
 

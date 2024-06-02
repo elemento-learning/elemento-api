@@ -15,6 +15,7 @@ type QuizService struct {
 	questionRepository   repositories.QuestionRepository
 	answerRepository     repositories.AnswerRepository
 	userResultRepository repositories.UserResultRepository
+	userRepository       repositories.UserRepository
 }
 
 // Get Leaderboard
@@ -38,8 +39,19 @@ func (service *QuizService) GetLeaderboard(bearerToken string) utils.Response {
 	}
 
 	for _, user := range users {
+		userName, err := service.userRepository.GetUserById(user.UserID)
+		if err != nil {
+			return utils.Response{
+				StatusCode: 500,
+				Messages:   "Gagal mendapatkan data user",
+				Data:       nil,
+			}
+		}
+
 		leaderboard = append(leaderboard, utils.StudentScore{
-			Score: user.Score,
+			Score:     user.Score,
+			StudentID: user.UserID,
+			Name:      userName.Fullname,
 		})
 	}
 
@@ -55,7 +67,7 @@ func (service *QuizService) GetLeaderboard(bearerToken string) utils.Response {
 }
 
 // Submit Quiz
-func (service *QuizService) SubmitQuiz(quizID, userID uuid.UUID, answers []utils.UserAnswerRequest, bearerToken string) utils.Response {
+func (service *QuizService) SubmitQuiz(quizID uuid.UUID, answers []utils.UserAnswerRequest, bearerToken string) utils.Response {
 	if bearerToken == "" {
 		return utils.Response{
 			StatusCode: 401,
@@ -65,8 +77,17 @@ func (service *QuizService) SubmitQuiz(quizID, userID uuid.UUID, answers []utils
 
 	}
 
+	userId, err := utils.ParseDataId(bearerToken)
+	if err != nil {
+		return utils.Response{
+			StatusCode: 401,
+			Messages:   "Unauthorized",
+			Data:       nil,
+		}
+	}
+
 	var response utils.Response
-	if quizID == uuid.Nil || userID == uuid.Nil || len(answers) == 0 {
+	if quizID == uuid.Nil || len(answers) == 0 {
 		response.StatusCode = 400
 		response.Messages = "QuizID, UserID, dan Answer tidak boleh kosong"
 		response.Data = nil
@@ -85,7 +106,7 @@ func (service *QuizService) SubmitQuiz(quizID, userID uuid.UUID, answers []utils
 	var newUserAnswer []models.UserAnswer
 	var newUserResult models.UserResult = models.UserResult{
 		UserResultID: uuid.New(),
-		UserID:       userID,
+		UserID:       userId,
 		QuizID:       quizID,
 		CountAnswer:  len(answers),
 	}
@@ -96,21 +117,18 @@ func (service *QuizService) SubmitQuiz(quizID, userID uuid.UUID, answers []utils
 				for _, correctAnswer := range question.Answer {
 					if correctAnswer.AnswerID == answer.AnswerID {
 						score += 1
+						newUserAnswer = append(newUserAnswer, models.UserAnswer{
+							UserAnswerID:       uuid.New(),
+							TitleQuestion:      question.Question,
+							UserAnswerTitle:    correctAnswer.AnswerTitle,
+							UserAnswerSubtitle: correctAnswer.AnswerSubtitle,
+						})
 					}
-
-					newUserAnswer = append(newUserAnswer, models.UserAnswer{
-						TitleQuestion: question.Question,
-						AnswerQuestion: models.Answer{
-							AnswerID:       correctAnswer.AnswerID,
-							AnswerTitle:    correctAnswer.AnswerTitle,
-							AnswerSubtitle: correctAnswer.AnswerSubtitle,
-						},
-					})
 				}
 			}
 		}
 	}
-	newUserResult.Score = score
+	newUserResult.Score = utils.CalculateScore(score, len(answers))
 	newUserResult.Answer = newUserAnswer
 	err = service.userResultRepository.CreateUserResult(newUserResult)
 	if err != nil {
@@ -316,5 +334,6 @@ func NewQuizService(db *gorm.DB) QuizService {
 		questionRepository:   repositories.NewQuestionRepository(db),
 		answerRepository:     repositories.NewAnswerRepository(db),
 		userResultRepository: repositories.NewUserResultRepository(db),
+		userRepository:       repositories.NewDBUserRepository(db),
 	}
 }

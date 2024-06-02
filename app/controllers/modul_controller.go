@@ -26,6 +26,42 @@ func NewModulController(db *gorm.DB) ModulController {
 	return controller
 }
 
+func (controller *ModulController) DeleteBab(c echo.Context) error {
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return c.JSON(401, "Unauthorized")
+	}
+
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+
+	id := c.Param("id")
+	uintId, err := utils.StringToUint(id)
+
+	if err != nil {
+		return c.JSON(400, "Invalid ID")
+	}
+
+	response := controller.modulService.DeleteBab(uintId, token)
+	return c.JSON(response.StatusCode, response)
+}
+
+func (controller *ModulController) DeleteModul(c echo.Context) error {
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return c.JSON(401, "Unauthorized")
+	}
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+
+	id := c.Param("id")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return c.JSON(400, "Invalid UUID")
+	}
+
+	response := controller.modulService.DeleteModul(uuid, token)
+	return c.JSON(response.StatusCode, response)
+}
+
 func (controller *ModulController) CreateNewModul(c echo.Context) error {
 
 	authorizationHeader := c.Request().Header.Get("Authorization")

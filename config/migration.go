@@ -7,8 +7,7 @@ import (
 )
 
 func AutoMigration(db *gorm.DB) {
-	db.AutoMigrate(&models.Quiz{})
-	db.AutoMigrate(&models.Answer{})
-	db.AutoMigrate(&models.Question{})
-
+	db.AutoMigrate(&models.UserResult{})
+	db.AutoMigrate(&models.UserAnswer{})
+	db.AutoMigrate(&models.FeedBack{})
 }

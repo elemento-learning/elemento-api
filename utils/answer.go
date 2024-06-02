@@ -10,6 +10,6 @@ type AnswerRequest struct {
 }
 
 type UserAnswerRequest struct {
-	QuestionID uuid.UUID
-	AnswerID   uuid.UUID
+	QuestionID uuid.UUID `json:"question_id"`
+	AnswerID   uuid.UUID `json:"answer_id"`
 }

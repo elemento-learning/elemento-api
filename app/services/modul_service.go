@@ -208,7 +208,57 @@ func (service *modulService) GetModulById(id uuid.UUID) utils.Response {
 	return response
 }
 
+func (service *modulService) DeleteModul(id uuid.UUID, bearerToken string) utils.Response {
+	if bearerToken == "" {
+		return utils.Response{
+			StatusCode: 401,
+			Messages:   "Unauthorized",
+			Data:       nil,
+		}
+	}
+
+	var response utils.Response
+	err := service.modulRepo.DeleteModul(id)
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal menghapus modul"
+		response.Data = nil
+		return response
+	}
+
+	response.StatusCode = 200
+	response.Messages = "Berhasil menghapus modul"
+	response.Data = nil
+	return response
+}
+
+func (service *modulService) DeleteBab(id uint, bearerToken string) utils.Response {
+	if bearerToken == "" {
+		return utils.Response{
+			StatusCode: 401,
+			Messages:   "Unauthorized",
+			Data:       nil,
+		}
+	}
+
+	var response utils.Response
+	err := service.babRepo.DeleteBab(id)
+	if err != nil {
+		response.StatusCode = 500
+		response.Messages = "Gagal menghapus bab"
+		response.Data = nil
+		return response
+	}
+
+	response.StatusCode = 200
+	response.Messages = "Berhasil menghapus bab"
+	response.Data = nil
+	return response
+}
+
 type ModulService interface {
+	DeleteBab(id uint, bearerToken string) utils.Response
+	DeleteModul(id uuid.UUID, bearerToken string) utils.Response
 	CreateNewModul(modul utils.ModulRequest, bearerToken string, photoRequest utils.UploadedPhoto) utils.Response
 	GetModulById(id uuid.UUID) utils.Response
 	CreateBabAndIntegrateToModul(modulId uuid.UUID, bearerToken string, bab utils.BabRequest) utils.Response
