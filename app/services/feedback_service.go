@@ -40,7 +40,7 @@ func (service *FeedbackService) DeleteFeedback(id uuid.UUID, bearerToken string)
 	}
 }
 
-func (service *FeedbackService) CreateFeedback(studentId uuid.UUID, feedBack string, bearerToken string) utils.Response {
+func (service *FeedbackService) CreateFeedback(teacherId uuid.UUID, feedBack string, bearerToken string) utils.Response {
 	if bearerToken == "" {
 		return utils.Response{
 			StatusCode: 401,
@@ -67,8 +67,8 @@ func (service *FeedbackService) CreateFeedback(studentId uuid.UUID, feedBack str
 	}
 
 	feedback := models.FeedBack{
-		StudentID:  studentId,
-		TeacherID:  user.IdUser,
+		StudentID:  user.IdUser,
+		TeacherID:  teacherId,
 		FeedBack:   feedBack,
 		FeedBackID: uuid.New(),
 		Category:   "Question",

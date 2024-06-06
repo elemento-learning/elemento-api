@@ -265,9 +265,38 @@ func (service *authService) Refresh(refreshToken string) utils.Response {
 	return response
 }
 
+func (service *authService) GetTeacher(bearerToken string) utils.Response {
+	var response utils.Response
+	id, err := utils.ParseDataId(bearerToken)
+	if id == uuid.Nil || err != nil {
+		response.StatusCode = 401
+		response.Messages = "Invalid token"
+		response.Data = nil
+		return response
+	}
+	user, err := service.authRepo.GetUserById(id)
+	if err != nil {
+		response.StatusCode = 401
+		response.Messages = "User tidak ditemukan"
+		response.Data = nil
+		return response
+	}
+	if user.Role != "teacher" {
+		response.StatusCode = 401
+		response.Messages = "User bukan guru"
+		response.Data = nil
+		return response
+	}
+	response.StatusCode = 200
+	response.Messages = "success"
+	response.Data = user
+	return response
+}
+
 type AuthService interface {
 	Login(username, password string) utils.Response
 	Register(requestRegister utils.UserRequest) utils.Response
+	GetTeacher(bearerToken string) utils.Response
 	GetLoggedInUser(bearerToken string) utils.Response
 	Refresh(refreshToken string) utils.Response
 }

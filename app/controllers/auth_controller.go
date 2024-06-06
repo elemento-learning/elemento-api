@@ -59,12 +59,12 @@ func (controller *AuthController) Login(c echo.Context) error {
 func (controller *AuthController) Register(c echo.Context) error {
 	type payload struct {
 		NamaLengkap          string    `json:"namaLengkap" validate:"required"`
-		Email                string    `json:"email" validate:"required,email"`
+		Email                string    `json:"email" validate:"required"`
 		Password             string    `json:"password" validate:"required"`
 		PasswordConfirmation string    `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 		Role                 string    `json:"role"`
-		IdKelas              uuid.UUID `json:"id_kelas"`
-		IdSekolah            uuid.UUID `json:"id_sekolah"`
+		IdKelas              uuid.UUID `json:"idKelas"`
+		IdSekolah            uuid.UUID `json:"idSekolah"`
 	}
 
 	payloadValidator := new(payload)
@@ -76,6 +76,7 @@ func (controller *AuthController) Register(c echo.Context) error {
 	if err := controller.validate.Struct(payloadValidator); err != nil {
 		return c.JSON(400, err.Error())
 	}
+
 	var regisUserPayload utils.UserRequest = utils.UserRequest{
 		Fullname:             payloadValidator.NamaLengkap,
 		IdKelas:              payloadValidator.IdKelas,
@@ -84,6 +85,19 @@ func (controller *AuthController) Register(c echo.Context) error {
 		Password:             payloadValidator.Password,
 		PasswordConfirmation: payloadValidator.PasswordConfirmation,
 		Role:                 payloadValidator.Role,
+	}
+
+	if regisUserPayload.Role == "guru" {
+		regisUserPayload.IdKelas = uuid.Nil
+		regisUserPayload.IdSekolah = uuid.Nil
+	}
+
+	if regisUserPayload.Role == "siswa" {
+		idSekolah, _ := uuid.Parse("144358b8-1ce4-11ef-9b63-dead0d6128da")
+		regisUserPayload.IdSekolah = idSekolah
+
+		idKelas, _ := uuid.Parse("71f0e8e1-1ce4-11ef-9b63-dead0d6128da")
+		regisUserPayload.IdKelas = idKelas
 	}
 
 	response := controller.authService.Register(regisUserPayload)
@@ -98,5 +112,17 @@ func (controller *AuthController) GetUser(c echo.Context) error {
 
 	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
 	response := controller.authService.GetLoggedInUser(token)
+	return c.JSON(response.StatusCode, response)
+}
+
+func (controller *AuthController) GetTeacher(c echo.Context) error {
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if authorizationHeader == "" || !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return c.JSON(401, "Unauthorized")
+	}
+
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+
+	response := controller.authService.GetTeacher(token)
 	return c.JSON(response.StatusCode, response)
 }

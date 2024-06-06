@@ -36,7 +36,7 @@ func (controller *FeedbackController) CreateFeedback(c echo.Context) error {
 
 	type payload struct {
 		Feedback  string    `json:"feedback" validate:"required"`
-		StudentID uuid.UUID `json:"student_id" validate:"required"`
+		TeacherID uuid.UUID `json:"teacher_id" validate:"required"`
 	}
 
 	payloadValidator := new(payload)
@@ -46,9 +46,9 @@ func (controller *FeedbackController) CreateFeedback(c echo.Context) error {
 	}
 
 	feedback := payloadValidator.Feedback
-	studentId := payloadValidator.StudentID
+	teacherId := payloadValidator.TeacherID
 
-	response := controller.feedbackService.CreateFeedback(studentId, feedback, token)
+	response := controller.feedbackService.CreateFeedback(teacherId, feedback, token)
 	return c.JSON(response.StatusCode, response)
 }
 
