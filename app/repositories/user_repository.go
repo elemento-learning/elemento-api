@@ -76,13 +76,46 @@ func (db *dbUser) UpdateUser(user models.User) (err error) {
 	return err
 }
 
+func (db *dbUser) GetTeacher() (teachers []models.User, err error) {
+	defer func() {
+		if err != nil {
+			log.Printf("Error getting Teachers: %v", err)
+		}
+	}()
+	err = db.Conn.Where("role = ?", "guru").Find(&teachers).Error
+	return teachers, err
+}
+
+func (db *dbUser) GetTeacherById(id uuid.UUID) (teacher models.User, err error) {
+	defer func() {
+		if err != nil {
+			log.Printf("Error getting Teacher by ID: %v", err)
+		}
+	}()
+	err = db.Conn.Where("id_user = ? AND role = ?", id, "guru").First(&teacher).Error
+	return teacher, err
+}
+
+func (db *dbUser) GetStudentById(id uuid.UUID) (student models.User, err error) {
+	defer func() {
+		if err != nil {
+			log.Printf("Error getting Student by ID: %v", err)
+		}
+	}()
+	err = db.Conn.Where("id_user = ? AND role = ?", id, "siswa").First(&student).Error
+	return student, err
+}
+
 type UserRepository interface {
 	GetToken() string
+	GetStudentById(id uuid.UUID) (models.User, error)
+	GetTeacherById(id uuid.UUID) (models.User, error)
 	CreateNewUser(user models.User) error
 	GetUserByUsername(username string) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)
 	FindReferalCodeIfExist(code string) bool
 	UpdateUser(user models.User) error
+	GetTeacher() ([]models.User, error)
 	GetUserById(id uuid.UUID) (models.User, error)
 }
 

@@ -4,6 +4,7 @@ import (
 	"elemento-api/app/models"
 	"elemento-api/app/repositories"
 	"elemento-api/utils"
+	"fmt"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -110,7 +111,10 @@ func (service *FeedbackService) GetFeedbacks(bearerToken string) utils.Response 
 
 	feedbacksData := []map[string]interface{}{}
 	for _, feedback := range feedbacks {
-		student, err := service.userRepository.GetUserById(feedback.StudentID)
+		fmt.Print("student :", feedback.StudentID)
+		fmt.Print("teacher :", feedback.TeacherID)
+
+		student, err := service.userRepository.GetStudentById(feedback.StudentID)
 		if err != nil {
 			return utils.Response{
 				StatusCode: 500,
@@ -119,7 +123,7 @@ func (service *FeedbackService) GetFeedbacks(bearerToken string) utils.Response 
 			}
 
 		}
-		teacher, err := service.userRepository.GetUserById(feedback.TeacherID)
+		teacher, err := service.userRepository.GetTeacherById(feedback.TeacherID)
 		if err != nil {
 			return utils.Response{
 				StatusCode: 500,

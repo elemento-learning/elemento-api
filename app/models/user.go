@@ -2,9 +2,6 @@ package models
 
 import "github.com/google/uuid"
 
-type TargetKalori struct {
-}
-
 type User struct {
 	IdUser    uuid.UUID `json:"id_user" gorm:"column:id_user;primary_key;type:char(36);"`
 	Fullname  string    `json:"fullname" gorm:"column:full_name;type:varchar(255);"`

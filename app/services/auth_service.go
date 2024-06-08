@@ -274,16 +274,10 @@ func (service *authService) GetTeacher(bearerToken string) utils.Response {
 		response.Data = nil
 		return response
 	}
-	user, err := service.authRepo.GetUserById(id)
+	user, err := service.authRepo.GetTeacher()
 	if err != nil {
 		response.StatusCode = 401
 		response.Messages = "User tidak ditemukan"
-		response.Data = nil
-		return response
-	}
-	if user.Role != "teacher" {
-		response.StatusCode = 401
-		response.Messages = "User bukan guru"
 		response.Data = nil
 		return response
 	}
